@@ -33,7 +33,7 @@ namespace TestableReactiveSearch
             _subscription =
                 terms
                     .Where(txt => txt.Length >= 3)
-                    .Throttle(TimeSpan.FromSeconds(0.5))
+                    .Throttle(TimeSpan.FromSeconds(0.5), concurrencyProvider.Thread)
                     .DistinctUntilChanged()
                     .Select(txt => searchServiceClient.SearchAsync(txt))
                     .Switch()
@@ -51,7 +51,7 @@ namespace TestableReactiveSearch
 
             terms
                 .Where(txt => txt.Length < minTextLength)
-                .ObserveOnDispatcher()
+                .ObserveOn(concurrencyProvider.Dispatcher)
                 .Subscribe(
                     results => SearchResults = Enumerable.Empty<string>(),
                     err => { Debug.WriteLine(err); },
